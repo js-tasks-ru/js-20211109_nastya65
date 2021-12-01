@@ -82,9 +82,7 @@ export default class SortableTable {
       if (headerCell.dataset.sortable !== 'false') {
         this.order = this.order === 'asc' ? 'desc' : 'asc';
         this.sort(headerCell.dataset.id);
-        console.log(headerCell)
         this.updateHeader(headerCell);
-        console.log(headerCell)
         this.subElements.body.innerHTML = this.tableBodyTemplate();
       }
     }
