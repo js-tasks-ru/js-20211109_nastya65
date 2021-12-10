@@ -37,8 +37,8 @@ export default class SortableList {
     listItem.style.left = properties.left + 'px';
     this.element.append(listItem);
 
-    let shiftX = event.clientX - listItem.getBoundingClientRect().left;
-    let shiftY = event.clientY - listItem.getBoundingClientRect().top;
+    const shiftX = event.clientX - listItem.getBoundingClientRect().left;
+    const shiftY = event.clientY - listItem.getBoundingClientRect().top;
     function moveAt(pageX, pageY) {
       listItem.style.left = pageX - shiftX + 'px';
       listItem.style.top = pageY - shiftY + 'px';
@@ -49,13 +49,12 @@ export default class SortableList {
     function onPointerMove(event) {
       moveAt(event.pageX, event.pageY);
       listItem.style.display = 'none';
-      let elemBelow = document.elementFromPoint(event.clientX, event.clientY);
-      console.log('elementBelow', elemBelow);
+      const elemBelow = document.elementFromPoint(event.clientX, event.clientY);
       listItem.style.display = 'flex';
 
       if (!elemBelow) return;
 
-      let droppableBelow = elemBelow.closest('.sortable-list__item');
+      const droppableBelow = elemBelow.closest('.sortable-list__item');
       if (droppableBelow) {
         if (droppableBelow.getBoundingClientRect().top > placeholder.getBoundingClientRect().top) {
           droppableBelow.after(placeholder);
