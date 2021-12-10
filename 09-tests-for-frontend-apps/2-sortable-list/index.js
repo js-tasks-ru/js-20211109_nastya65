@@ -20,22 +20,13 @@ export default class SortableList {
     }).join('');
   }
 
-  dragElem = (event) => {
+  enableDraggingForElem = (event) => {
     if (event.target.dataset.grabHandle !== '') return;
     const listItem = event.target.closest('.sortable-list__item');
 
     const properties = listItem.getBoundingClientRect();
-    const placeholder = document.createElement('li');
-    placeholder.classList.add('sortable-list__placeholder');
-    placeholder.style.width = properties.width + 'px';
-    placeholder.style.height = properties.height + 'px';
-    listItem.before(placeholder);
-
-    listItem.classList.add('sortable-list__item_dragging');
-    listItem.style.width = properties.width + 'px';
-    listItem.style.top = properties.top + 'px';
-    listItem.style.left = properties.left + 'px';
-    this.element.append(listItem);
+    const placeholder = this.createPlaceholder(listItem, properties);
+    this.updateDraggingElem(listItem, properties);
 
     const shiftX = event.clientX - listItem.getBoundingClientRect().left;
     const shiftY = event.clientY - listItem.getBoundingClientRect().top;
@@ -66,12 +57,29 @@ export default class SortableList {
 
     document.onpointerup = function() {
       document.removeEventListener('pointermove', onPointerMove);
-      document.onmouseup = null;
+      document.onpointerup = null;
       listItem.classList.remove('sortable-list__item_dragging');
       listItem.style = ''
       placeholder.before(listItem)
       placeholder.remove();
     };
+  }
+
+  createPlaceholder(listItem, properties) {
+    const placeholder = document.createElement('li');
+    placeholder.classList.add('sortable-list__placeholder');
+    placeholder.style.width = properties.width + 'px';
+    placeholder.style.height = properties.height + 'px';
+    listItem.before(placeholder);
+    return placeholder;
+  }
+
+  updateDraggingElem(listItem, properties) {
+    listItem.classList.add('sortable-list__item_dragging');
+    listItem.style.width = properties.width + 'px';
+    listItem.style.top = properties.top + 'px';
+    listItem.style.left = properties.left + 'px';
+    this.element.append(listItem);
   }
 
   deleteElem(event) {
@@ -80,7 +88,7 @@ export default class SortableList {
   }
 
   initialize() {
-    document.addEventListener('pointerdown', this.dragElem);
+    document.addEventListener('pointerdown', this.enableDraggingForElem);
     document.ondragstart = () => false;
 
     const deleteElem = this.element.querySelectorAll('[data-delete-handle]')
@@ -97,7 +105,7 @@ export default class SortableList {
 
   destroy() {
     this.remove();
-    document.removeEventListener('pointerdown', this.dragElem);
+    document.removeEventListener('pointerdown', this.enableDraggingForElem);
     this.element = null;
   }
 }
