@@ -83,6 +83,7 @@ export default class SortableList {
   }
 
   deleteElem(event) {
+    if (event.target.dataset.deleteHandle !== '') return;
     const listItem = event.target.closest('.sortable-list__item');
     listItem.remove();
   }
@@ -90,11 +91,7 @@ export default class SortableList {
   initialize() {
     document.addEventListener('pointerdown', this.enableDraggingForElem);
     document.ondragstart = () => false;
-
-    const deleteElem = this.element.querySelectorAll('[data-delete-handle]')
-    deleteElem.forEach((elem) => {
-      elem.addEventListener('pointerdown', this.deleteElem);
-    })
+    document.addEventListener('pointerdown', this.deleteElem);
   }
 
   remove () {
@@ -106,6 +103,7 @@ export default class SortableList {
   destroy() {
     this.remove();
     document.removeEventListener('pointerdown', this.enableDraggingForElem);
+    document.removeEventListener('pointerdown', this.deleteElem);
     this.element = null;
   }
 }
