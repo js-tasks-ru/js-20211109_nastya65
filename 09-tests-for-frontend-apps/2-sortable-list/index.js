@@ -1,4 +1,7 @@
 export default class SortableList {
+  listItem = '';
+  placeholder = '';
+
   constructor ({items = []}) {
     this.items = items;
     this.render();
@@ -22,47 +25,50 @@ export default class SortableList {
 
   enableDraggingForElem = (event) => {
     if (event.target.dataset.grabHandle !== '') return;
-    const listItem = event.target.closest('.sortable-list__item');
+    this.listItem = event.target.closest('.sortable-list__item');
 
-    const properties = listItem.getBoundingClientRect();
-    const placeholder = this.createPlaceholder(listItem, properties);
-    this.updateDraggingElem(listItem, properties);
+    const properties = this.listItem.getBoundingClientRect();
+    this.placeholder = this.createPlaceholder(this.listItem, properties);
+    this.updateDraggingElem(this.listItem, properties);
+    this.moveAt(event.pageX, event.pageY, event);
 
-    const shiftX = event.clientX - listItem.getBoundingClientRect().left;
-    const shiftY = event.clientY - listItem.getBoundingClientRect().top;
-    function moveAt(pageX, pageY) {
-      listItem.style.left = pageX - shiftX + 'px';
-      listItem.style.top = pageY - shiftY + 'px';
-    }
-    moveAt(event.pageX, event.pageY);
+    document.addEventListener('pointermove', this.onPointerMove);
+    document.addEventListener('pointerup', this.onPointerUp);
+  }
 
-    document.addEventListener('pointermove', onPointerMove);
-    function onPointerMove(event) {
-      moveAt(event.pageX, event.pageY);
-      listItem.style.display = 'none';
-      const elemBelow = document.elementFromPoint(event.clientX, event.clientY);
-      listItem.style.display = 'flex';
+  moveAt(pageX, pageY, event) {
+    const shiftX = event.clientX - this.listItem.getBoundingClientRect().left;
+    const shiftY = event.clientY - this.listItem.getBoundingClientRect().top;
+    this.listItem.style.left = pageX - shiftX + 'px';
+    this.listItem.style.top = pageY - shiftY + 'px';
+  }
 
-      if (!elemBelow) return;
+  onPointerMove = (event) => {
+    this.moveAt(event.pageX, event.pageY, event);
+    this.listItem.style.display = 'none';
+    const elemBelow = document.elementFromPoint(event.clientX, event.clientY);
+    this.listItem.style.display = 'flex';
 
-      const droppableBelow = elemBelow.closest('.sortable-list__item');
-      if (droppableBelow) {
-        if (droppableBelow.getBoundingClientRect().top > placeholder.getBoundingClientRect().top) {
-          droppableBelow.after(placeholder);
-        } else {
-          droppableBelow.before(placeholder);
-        }
+    if (!elemBelow) return;
+
+    const droppableBelow = elemBelow.closest('.sortable-list__item');
+    if (droppableBelow) {
+      if (droppableBelow.getBoundingClientRect().top > this.placeholder.getBoundingClientRect().top) {
+        droppableBelow.after(this.placeholder);
+      } else {
+        droppableBelow.before(this.placeholder);
       }
     }
+  }
 
-    document.onpointerup = function() {
-      document.removeEventListener('pointermove', onPointerMove);
-      document.onpointerup = null;
-      listItem.classList.remove('sortable-list__item_dragging');
-      listItem.style = ''
-      placeholder.before(listItem)
-      placeholder.remove();
-    };
+  onPointerUp = () => {
+    document.removeEventListener('pointermove', this.onPointerMove);
+    document.removeEventListener('pointerup', this.onPointerUp);
+
+    this.listItem.classList.remove('sortable-list__item_dragging');
+    this.listItem.style = '';
+    this.placeholder.before(this.listItem);
+    this.placeholder.remove();
   }
 
   createPlaceholder(listItem, properties) {
